@@ -1,0 +1,114 @@
+# BIBLIOTECAS IMPORTADAS NECESARIAS PARA LA EJECUCION DEL PROGRAMA.
+import pyodbc
+import pandas as pd
+import wmi
+import socket
+import tkinter as tk
+import datetime
+from tkinter import messagebox
+from datetime import datetime
+
+# Variable para obtener la serie del equipo.
+c = wmi.WMI()
+
+# Se crea interfaz de usuario y se eliminan los botones de ventana.
+root = tk.Tk()
+root.overrideredirect(True)
+
+# Variables definidas para obtener el numero de serie, el nombre del equipo y la fecha.
+n_serie = c.Win32_BIOS()[0].SerialNumber
+nom_equipo = socket.gethostname()
+fecha = datetime.now()
+
+# Etiquetas
+label_serie = tk.Label(root, text="Número de serie:")
+label_equipo = tk.Label(root, text="Nombre de equipo:")
+label_usuario = tk.Label(root, text="Nombre de usuario:")
+label_ext = tk.Label(root, text="Extensión:")
+
+# Cuadros de texto
+entry_serie = tk.Entry(root)
+entry_serie.insert(0, n_serie)
+entry_serie.config(state='readonly')
+entry_equipo = tk.Entry(root)
+entry_equipo.insert(0, nom_equipo)
+entry_equipo.config(state='readonly')
+entry_usuario = tk.Entry(root)
+entry_ext = tk.Entry(root)
+entry_fecha = tk.Entry(root)
+entry_fecha.insert(0, fecha)
+
+# Colocación de elementos
+label_serie.grid(row=0, column=0)
+label_equipo.grid(row=1, column=0)
+label_usuario.grid(row=2, column=0)
+label_ext.grid(row=3, column=0)
+
+entry_serie.grid(row=0, column=1)
+entry_equipo.grid(row=1, column=1)
+entry_usuario.grid(row=2, column=1)
+entry_ext.grid(row=3, column=1)
+
+# Variables para definir los datos necesarios para la conexion a la BD.
+server = 'Nombre de servidor'
+database = 'Nombre base de datos'
+username = 'usuario'
+password = '@Contraseña de usuario$'
+l
+# Función para agregar los datos a la base de datos
+def agregar_datos():
+    if not entry_serie.get() or not entry_equipo.get() or not entry_usuario.get():
+        messagebox.showerror("ERROR", "Debe llenar todos los campos.")
+        return
+    # Tomar los datos de los cuadros de texto
+    n_serie = entry_serie.get()
+    nom_equipo = entry_equipo.get()
+    nom_usuario = entry_usuario.get()
+    ext = entry_ext.get()
+    
+    # Crear la conexión a la base de datos
+    conexion = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};' f'SERVER={server};' f'DATABASE={database};' f'UID={username};' f'PWD={password}')
+
+    # Crear el cursor
+    cursor = conexion.cursor()
+
+    # Crear la consulta SQL
+    consulta = "INSERT INTO Table_1 (n_serie, nom_equipo, nom_usuario, ext, fecha) VALUES (?, ?, ?, ?, ?)"
+
+    # Ejecutar la consulta SQL
+    cursor.execute(consulta, (n_serie,nom_equipo, nom_usuario, ext, fecha))
+
+    # Confirmar la transacción
+    conexion.commit()
+
+    # Cerrar la conexión
+    conexion.close()
+    
+    # Mensaje que indica la insericion correcta de los datos.
+    messagebox.showinfo("ÉXITO", "Los datos han sido guardados correctamente.")
+    root.destroy()
+
+# Botón para agregar los datos
+button_agregar = tk.Button(root, text="Agregar", command=agregar_datos)
+button_agregar.grid(row=5, column=0, columnspan=2)
+
+# Se establece la ventana principal de la aplicación como la ventana superior o "siempre visible"
+root.attributes("-topmost", True)
+
+# Obtener el ancho y alto de la pantalla
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+
+# Obtener el ancho y alto de la ventana
+window_width = root.winfo_reqwidth()
+window_height = root.winfo_reqheight()
+
+# Calcular la posición x e y para centrar la ventana en la pantalla
+x = int((screen_width/2) - (window_width/2))
+y = int((screen_height/2) - (window_height/2))
+
+# Mover la ventana a la posición centrada
+root.geometry(f"+{x}+{y}")
+
+# Comienza el bucle de eventos de la interfaz de usuario.
+root.mainloop()
